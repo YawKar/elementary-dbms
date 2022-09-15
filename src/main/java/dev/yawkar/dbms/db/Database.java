@@ -4,7 +4,6 @@ import dev.yawkar.dbms.specification.TableSpecification;
 
 public interface Database {
 
-    String getName();
     String getUri();
     Table createTable(TableSpecification tableSpecification);
     Table getTable(String tableName);
