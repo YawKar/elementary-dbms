@@ -1,0 +1,22 @@
+!startmeta
+version:<version:int>
+tables:<number of tables:int>
+!endmeta
+!starttables
+<tableName:string>
+<tableId:int>
+<columnsNumber:int>
+<column[1]Label:string>
+<column[1]Type:string>
+[...]
+!endtables
+!startdata
+<tableId:int> <column[1]Value:?> <column[2]Value:?>
+[...]
+!enddata
+
+/* Strings:
+spaces (' ') replaced by underscores ('_')
+"Hello world" -> processing -> "Hello_world"
+"Hello world" <- extracting <- "Hello_world"
+*/
