@@ -19,7 +19,7 @@ public class ElemDBMSManager implements DBManager {
             if (!dbFile.isFile()) {
                 throw new DatabaseFileNotFoundException(dbFile.getName());
             }
-            return new FileDatabase(uri, dbFile);
+            return new FileDatabase(uri, dbFile, false);
         } else {
             throw new UnknownDatabaseTypeUriException(uri);
         }
@@ -37,7 +37,7 @@ public class ElemDBMSManager implements DBManager {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            return new FileDatabase(uri, dbFile);
+            return new FileDatabase(uri, dbFile, true);
         } else {
             throw new UnknownDatabaseTypeUriException(uri);
         }
