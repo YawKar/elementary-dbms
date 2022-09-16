@@ -4,4 +4,5 @@ public interface Column {
 
     String getLabel();
     int getIndex();
+    String getType();
 }
