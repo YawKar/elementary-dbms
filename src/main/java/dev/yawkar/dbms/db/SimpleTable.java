@@ -1,14 +1,13 @@
 package dev.yawkar.dbms.db;
 
+import dev.yawkar.dbms.exception.InvalidNumberOfValuesException;
+import dev.yawkar.dbms.exception.UnknownDatabaseTypeUriException;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SimpleTable implements Table {
@@ -87,7 +86,35 @@ public class SimpleTable implements Table {
     }
 
     @Override
-    public void createRow(Row row) {
-
+    public void insertRow(Object...values) {
+        if (values.length != columns.size()) {
+            throw new InvalidNumberOfValuesException("Expected %d values but got %d".formatted(columns.size(), values.length));
+        }
+        try {
+            File temporaryDbFile = Files.createFile(Path.of(dbFile.getPath() + ".temp")).toFile();
+            try (var lines = Files.lines(dbFile.toPath());
+                 FileWriter fileWriter = new FileWriter(temporaryDbFile)) {
+                var iterator = lines.iterator();
+                while (iterator.hasNext()) {
+                    String line = iterator.next();
+                    if (line.equals("!enddata")) {
+                        fileWriter.write(Integer.toString(tableId));
+                        fileWriter.write(' ');
+                        fileWriter.write(Arrays.stream(values).map(Object::toString).collect(Collectors.joining(" ")));
+                        fileWriter.write('\n');
+                    }
+                    fileWriter.write(line);
+                    fileWriter.write('\n');
+                }
+            }
+            if (!dbFile.delete()) {
+                throw new RuntimeException("Cannot delete old db file '%s'".formatted(dbFile.getName()));
+            }
+            if (!temporaryDbFile.renameTo(dbFile)) {
+                throw new RuntimeException("Cannot rename '%s' to '%s'".formatted(temporaryDbFile.getName(), dbFile.getName()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
