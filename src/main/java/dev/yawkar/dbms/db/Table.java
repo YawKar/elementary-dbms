@@ -10,5 +10,5 @@ public interface Table {
     List<Column> getColumns();
     List<Row> getRows();
     List<Row> getQueriedRows(CriteriaSpecification criteriaSpecification);
-    void createRow(Row row);
+    void insertRow(Object...values);
 }

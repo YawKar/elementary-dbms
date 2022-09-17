@@ -4,9 +4,6 @@ import dev.yawkar.dbms.DBManager;
 import dev.yawkar.dbms.ElemDBMSManager;
 import dev.yawkar.dbms.db.Database;
 import dev.yawkar.dbms.db.Table;
-import dev.yawkar.dbms.specification.base.Equals;
-import dev.yawkar.dbms.specification.base.Greater;
-import dev.yawkar.dbms.specification.base.Neg;
 
 public class Main {
     public static void main(String[] args) {
@@ -29,10 +26,8 @@ public class Main {
         }
 
         Table studentsTable = database.getTable("students");
-        studentsTable.getQueriedRows(new Neg(new Equals("name", "yawkar"))).forEach(System.out::println);
-
-        System.out.println();
-        studentsTable.getQueriedRows(new Greater("student_id", 1L)).forEach(System.out::println);
+        studentsTable.insertRow(5, "DECAHTHUK");
+        studentsTable.getRows().forEach(System.out::println);
 
         //manager.dropDatabase("file:sample.elmdb");
     }
