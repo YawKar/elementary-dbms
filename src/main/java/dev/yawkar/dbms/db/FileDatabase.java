@@ -1,8 +1,6 @@
 package dev.yawkar.dbms.db;
 
-import dev.yawkar.dbms.exception.DatabaseFileMetaMissingException;
-import dev.yawkar.dbms.exception.NoSuchTableNameException;
-import dev.yawkar.dbms.exception.UnknownColumnAttributeException;
+import dev.yawkar.dbms.exception.*;
 import dev.yawkar.dbms.specification.TableSpecification;
 
 import java.io.*;
@@ -22,6 +20,27 @@ public class FileDatabase implements Database {
             initDb();
         }
         extractMetadata();
+        validateStateOfTables();
+    }
+
+    private void validateStateOfTables() {
+        for (var table : tables) {
+            List<Row> rows = table.getRows();
+            List<Column> columns = table.getColumns();
+            long pkColumns = columns.stream().filter(Column::isPk).count();
+            if (pkColumns != 1)
+                throw new IllegalTableDefinitionException("Table '%s' contains %d columns with PK (should contain only 1)"
+                        .formatted(table.getName(), pkColumns));
+            Set<String> primaryKeys = new HashSet<>();
+            Column pkColumn = columns.stream().filter(Column::isPk).findAny().get();
+            for (Row row : rows) {
+                String pkId = row.get(pkColumn.getIndex()).asString();
+                if (primaryKeys.contains(pkId))
+                    throw new PrimaryKeyConstraintViolationException("More than 1 row with the same PK '%s(%s)' in table '%s'"
+                            .formatted(pkColumn.getLabel(), pkId, table.getName()));
+                primaryKeys.add(pkId);
+            }
+        }
     }
 
     private void initDb() {
@@ -79,10 +98,13 @@ public class FileDatabase implements Database {
         if (!metadata.containsKey("tables"))
             throw new DatabaseFileMetaMissingException("tables");
         int tablesNumber = Integer.parseInt(metadata.get("tables"));
-        extractTables(tablesNumber);
+        extractTables();
+        if (tablesNumber != tables.size())
+            throw new DatabaseFileMetaMissingException("'tables' in metadata (%d) does not match number of table definitions in database (%d)"
+                    .formatted(tablesNumber, tables.size()));
     }
 
-    private void extractTables(int tablesNumber) {
+    private void extractTables() {
         try (var lines = Files.lines(dbFile.toPath())) {
             var iterator = lines.iterator();
             while (iterator.hasNext()) {
@@ -123,7 +145,6 @@ public class FileDatabase implements Database {
                 String attribute = columnScanner.next();
                 switch (attribute) {
                     case "PK" -> column.pk = true;
-                    case "NULLABLE" -> column.nullable = true;
                     default -> throw new UnknownColumnAttributeException(
                             "Unknown attribute '%s' for column '%s' in table '%s'".formatted(
                                     attribute, column.label, table.getName()
