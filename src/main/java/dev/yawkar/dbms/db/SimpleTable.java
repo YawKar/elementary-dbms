@@ -1,7 +1,7 @@
 package dev.yawkar.dbms.db;
 
 import dev.yawkar.dbms.exception.InvalidNumberOfValuesException;
-import dev.yawkar.dbms.exception.UnknownDatabaseTypeUriException;
+import dev.yawkar.dbms.exception.PrimaryKeyConstraintViolationException;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
 
 import java.io.*;
@@ -89,6 +89,12 @@ public class SimpleTable implements Table {
     public void insertRow(Object...values) {
         if (values.length != columns.size()) {
             throw new InvalidNumberOfValuesException("Expected %d values but got %d".formatted(columns.size(), values.length));
+        }
+        // check if insertion violates PK uniqueness
+        Column pkColumn = columns.stream().filter(Column::isPk).findAny().get();
+        if (getRows().stream().anyMatch(r -> r.get(pkColumn.getIndex()).asString().equals(values[0].toString()))) {
+            throw new PrimaryKeyConstraintViolationException("Row with PK %s(%s) already exists in table '%s'"
+                    .formatted(pkColumn.getLabel(), values[0], name));
         }
         try {
             File temporaryDbFile = Files.createFile(Path.of(dbFile.getPath() + ".temp")).toFile();

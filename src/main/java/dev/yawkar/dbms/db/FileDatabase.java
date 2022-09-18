@@ -1,7 +1,6 @@
 package dev.yawkar.dbms.db;
 
-import dev.yawkar.dbms.exception.DatabaseFileMetaMissingException;
-import dev.yawkar.dbms.exception.NoSuchTableNameException;
+import dev.yawkar.dbms.exception.*;
 import dev.yawkar.dbms.specification.TableSpecification;
 
 import java.io.*;
@@ -21,6 +20,27 @@ public class FileDatabase implements Database {
             initDb();
         }
         extractMetadata();
+        validateStateOfTables();
+    }
+
+    private void validateStateOfTables() {
+        for (var table : tables) {
+            List<Row> rows = table.getRows();
+            List<Column> columns = table.getColumns();
+            long pkColumns = columns.stream().filter(Column::isPk).count();
+            if (pkColumns != 1)
+                throw new IllegalTableDefinitionException("Table '%s' contains %d columns with PK (should contain only 1)"
+                        .formatted(table.getName(), pkColumns));
+            Set<String> primaryKeys = new HashSet<>();
+            Column pkColumn = columns.stream().filter(Column::isPk).findAny().get();
+            for (Row row : rows) {
+                String pkId = row.get(pkColumn.getIndex()).asString();
+                if (primaryKeys.contains(pkId))
+                    throw new PrimaryKeyConstraintViolationException("More than 1 row with the same PK '%s(%s)' in table '%s'"
+                            .formatted(pkColumn.getLabel(), pkId, table.getName()));
+                primaryKeys.add(pkId);
+            }
+        }
     }
 
     private void initDb() {
@@ -30,16 +50,29 @@ public class FileDatabase implements Database {
             fileWriter.write("tables:1\n");
             fileWriter.write("!endmeta\n");
             fileWriter.write("!starttables\n");
-            fileWriter.write("students\n");
-            fileWriter.write("1\n");
+            fileWriter.write("students 1\n");
             fileWriter.write("2\n");
-            fileWriter.write("student_id\n");
-            fileWriter.write("long\n");
-            fileWriter.write("name\n");
-            fileWriter.write("string\n");
+            fileWriter.write("student_id long PK\n");
+            fileWriter.write("name string\n");
+            fileWriter.write("labs 2\n");
+            fileWriter.write("2\n");
+            fileWriter.write("lab_id long PK\n");
+            fileWriter.write("lab_title string\n");
+            fileWriter.write("courses 3\n");
+            fileWriter.write("3\n");
+            fileWriter.write("course_id long PK\n");
+            fileWriter.write("course_applicants long\n");
+            fileWriter.write("course_title string\n");
             fileWriter.write("!endtables\n");
             fileWriter.write("!startdata\n");
-            fileWriter.write("1 1337 yawkar\n");
+            fileWriter.write("1 1 yawkar\n");
+            fileWriter.write("1 2 didhat\n");
+            fileWriter.write("1 4 yakiza\n");
+            fileWriter.write("1 3 neon.eagle\n");
+            fileWriter.write("2 1 mathematical_analysis\n");
+            fileWriter.write("2 2 physics\n");
+            fileWriter.write("2 3 programming_in_java\n");
+            fileWriter.write("3 1 89 Software_Engineering\n");
             fileWriter.write("!enddata\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -65,10 +98,13 @@ public class FileDatabase implements Database {
         if (!metadata.containsKey("tables"))
             throw new DatabaseFileMetaMissingException("tables");
         int tablesNumber = Integer.parseInt(metadata.get("tables"));
-        extractTables(tablesNumber);
+        extractTables();
+        if (tablesNumber != tables.size())
+            throw new DatabaseFileMetaMissingException("'tables' in metadata (%d) does not match number of table definitions in database (%d)"
+                    .formatted(tablesNumber, tables.size()));
     }
 
-    private void extractTables(int tablesNumber) {
+    private void extractTables() {
         try (var lines = Files.lines(dbFile.toPath())) {
             var iterator = lines.iterator();
             while (iterator.hasNext()) {
@@ -85,23 +121,36 @@ public class FileDatabase implements Database {
 
     private void processTablesBlock(Iterator<String> iterator) {
         while (iterator.hasNext()) {
-            String tableName = iterator.next();
-            if (tableName.equals("!endtables")) {
+            String tableDefinition = iterator.next();
+            if (tableDefinition.equals("!endtables")) {
                 break;
             }
-            processTable(tableName, iterator);
+            processTable(tableDefinition, iterator);
         }
     }
 
-    private void processTable(String tableName, Iterator<String> iterator) {
-        int tableId = Integer.parseInt(iterator.next());
+    private void processTable(String tableDefinition, Iterator<String> iterator) {
+        int tableId = Integer.parseInt(tableDefinition.split(" ")[1]);
+        String tableName = tableDefinition.split(" ")[0];
         int columnsNumber = Integer.parseInt(iterator.next());
         SimpleTable table = new SimpleTable(tableName, dbFile, tableId);
         for (int i = 0; i < columnsNumber; ++i) {
             SimpleColumn column = new SimpleColumn();
-            column.label = iterator.next();
+            String columnDefinition = iterator.next();
+            Scanner columnScanner = new Scanner(columnDefinition);
+            column.label = columnScanner.next();
             column.index = i;
-            column.type = iterator.next();
+            column.type = columnScanner.next();
+            while (columnScanner.hasNext()) {
+                String attribute = columnScanner.next();
+                switch (attribute) {
+                    case "PK" -> column.pk = true;
+                    default -> throw new UnknownColumnAttributeException(
+                            "Unknown attribute '%s' for column '%s' in table '%s'".formatted(
+                                    attribute, column.label, table.getName()
+                            ));
+                }
+            }
             table.columns.add(column);
         }
         tables.add(table);
