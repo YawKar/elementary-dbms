@@ -5,6 +5,8 @@ public class SimpleColumn implements Column {
     String label;
     int index;
     String type;
+    boolean pk;
+    boolean nullable;
 
     SimpleColumn() {}
 
@@ -27,5 +29,15 @@ public class SimpleColumn implements Column {
     @Override
     public String getType() {
         return type;
+    }
+
+    @Override
+    public boolean isPk() {
+        return pk;
+    }
+
+    @Override
+    public boolean isNullable() {
+        return nullable;
     }
 }
