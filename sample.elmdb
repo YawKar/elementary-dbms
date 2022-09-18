@@ -3,29 +3,19 @@ version:1
 tables:3
 !endmeta
 !starttables
-students
-1
+students 1
 2
-student_id
-long
-name
-string
-labs
+student_id long PK
+name string
+labs 2
 2
-2
-lab_id
-long
-lab_title
-string
-courses
+lab_id long PK
+lab_title string
+courses 3
 3
-3
-course_id
-long
-course_applicants
-long
-course_title
-string
+course_id long PK
+course_applicants long
+course_title string
 !endtables
 !startdata
 1 1 yawkar
