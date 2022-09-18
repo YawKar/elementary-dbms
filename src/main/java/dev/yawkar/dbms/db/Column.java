@@ -6,5 +6,4 @@ public interface Column {
     int getIndex();
     String getType();
     boolean isPk();
-    boolean isNullable();
 }

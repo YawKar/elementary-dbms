@@ -35,9 +35,4 @@ public class SimpleColumn implements Column {
     public boolean isPk() {
         return pk;
     }
-
-    @Override
-    public boolean isNullable() {
-        return nullable;
-    }
 }
