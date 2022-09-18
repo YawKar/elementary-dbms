@@ -13,6 +13,9 @@ public class Main {
             System.out.printf("Table: %s%n", table.getName());
             for (var column : table.getColumns()) {
                 System.out.printf("%s(%s) ", column.getLabel(), column.getType());
+                if (column.isPk())
+                    System.out.print("PK ");
+                System.out.println();
             }
             System.out.println();
             System.out.println("Rows:");
@@ -28,7 +31,6 @@ public class Main {
         Table studentsTable = database.getTable("students");
         studentsTable.insertRow(5, "DECAHTHUK");
         studentsTable.getRows().forEach(System.out::println);
-
         //manager.dropDatabase("file:sample.elmdb");
     }
 }
