@@ -5,4 +5,6 @@ public interface Column {
     String getLabel();
     int getIndex();
     String getType();
+    boolean isPk();
+    boolean isNullable();
 }
