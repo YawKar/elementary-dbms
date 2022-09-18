@@ -3,11 +3,9 @@ version:<version:int>
 tables:<number of tables:int>
 !endmeta
 !starttables
-<tableName:string>
-<tableId:int>
+<tableName:string> <tableId:int>
 <columnsNumber:int>
-<column[1]Label:string>
-<column[1]Type:string>
+<column[1]Label:string> <column[1]Type:string> [PK]
 [...]
 !endtables
 !startdata
