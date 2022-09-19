@@ -123,4 +123,56 @@ public class SimpleTable implements Table {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void deleteQueriedRows(CriteriaSpecification criteriaSpecification) {
+        criteriaSpecification.setup(this);
+        Set<String> pkKeysToDelete = new HashSet<>();
+        Column pkColumn = columns.stream().filter(Column::isPk).findAny().get();
+        for (var row : getQueriedRows(criteriaSpecification)) {
+            pkKeysToDelete.add(row.get(pkColumn.getIndex()).asString());
+        }
+        try {
+            File temporaryDbFile = Files.createFile(Path.of(dbFile.getPath() + ".temp")).toFile();
+            try (var lines = Files.lines(dbFile.toPath());
+                 FileWriter tempWriter = new FileWriter(temporaryDbFile)) {
+                var iterator = lines.iterator();
+                boolean inDataSection = false;
+                while (iterator.hasNext()) {
+                    String line = iterator.next();
+                    if (inDataSection) {
+                        if (!line.equals("!enddata")) {
+                            Scanner rowScanner = new Scanner(line);
+                            int rowTableId = rowScanner.nextInt();
+                            for (int elemIndex = 0; elemIndex < pkColumn.getIndex(); ++elemIndex)
+                                rowScanner.next();
+                            String rowPKey = rowScanner.next();
+                            if (rowTableId != tableId || !pkKeysToDelete.contains(rowPKey)) {
+                                tempWriter.write(line);
+                                tempWriter.write('\n');
+                            }
+                        } else {
+                            inDataSection = false;
+                            tempWriter.write(line);
+                            tempWriter.write('\n');
+                        }
+                    } else {
+                        tempWriter.write(line);
+                        tempWriter.write('\n');
+                        if (line.equals("!startdata")) {
+                            inDataSection = true;
+                        }
+                    }
+                }
+            }
+            if (!dbFile.delete()) {
+                throw new RuntimeException("Cannot delete old db file '%s'".formatted(dbFile.getName()));
+            }
+            if (!temporaryDbFile.renameTo(dbFile)) {
+                throw new RuntimeException("Cannot rename '%s' to '%s'".formatted(temporaryDbFile.getName(), dbFile.getName()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
