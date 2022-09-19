@@ -11,4 +11,5 @@ public interface Table {
     List<Row> getRows();
     List<Row> getQueriedRows(CriteriaSpecification criteriaSpecification);
     void insertRow(Object...values);
+    void deleteQueriedRows(CriteriaSpecification criteriaSpecification);
 }

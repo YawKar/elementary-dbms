@@ -2,8 +2,9 @@ package dev.yawkar;
 
 import dev.yawkar.dbms.DBManager;
 import dev.yawkar.dbms.ElemDBMSManager;
+import dev.yawkar.dbms.db.Column;
 import dev.yawkar.dbms.db.Database;
-import dev.yawkar.dbms.db.Table;
+import dev.yawkar.dbms.specification.base.ByPK;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,20 +18,19 @@ public class Main {
                     System.out.print("PK ");
                 System.out.println();
             }
+            Column pKeyColumn = table.getColumns().stream().filter(Column::isPk).findAny().get();
             System.out.println();
             System.out.println("Rows:");
             for (var row : table.getRows()) {
                 for (int i = 0; i < table.getColumns().size(); ++i) {
                     System.out.printf("%s ", row.get(i).asString());
+                    table.deleteQueriedRows(new ByPK(row.get(pKeyColumn.getIndex()).asString()));
                 }
                 System.out.println();
             }
             System.out.println();
         }
 
-        Table studentsTable = database.getTable("students");
-        studentsTable.insertRow(5, "DECAHTHUK");
-        studentsTable.getRows().forEach(System.out::println);
         //manager.dropDatabase("file:sample.elmdb");
     }
 }
