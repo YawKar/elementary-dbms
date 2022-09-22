@@ -4,11 +4,11 @@ import dev.yawkar.dbms.db.Row;
 import dev.yawkar.dbms.db.Table;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
 
-public class Neg implements CriteriaSpecification {
+public class NEG implements CriteriaSpecification {
 
     private final CriteriaSpecification innerCriteria;
 
-    public Neg(CriteriaSpecification innerCriteria) {
+    public NEG(CriteriaSpecification innerCriteria) {
         this.innerCriteria = innerCriteria;
     }
 

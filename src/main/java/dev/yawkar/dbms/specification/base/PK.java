@@ -5,20 +5,20 @@ import dev.yawkar.dbms.db.Row;
 import dev.yawkar.dbms.db.Table;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
 
-public class ByPK implements CriteriaSpecification {
+public class PK implements CriteriaSpecification {
 
     CriteriaSpecification finalCriteria;
     int pKeyColumnIndex;
 
-    public ByPK(String pKey) {
+    public PK(String pKey) {
         finalCriteria = row -> row.get(pKeyColumnIndex).asString().equals(pKey);
     }
 
-    public ByPK(long pKey) {
+    public PK(long pKey) {
         finalCriteria = row -> row.get(pKeyColumnIndex).asLong() == pKey;
     }
 
-    public ByPK(double pKey) {
+    public PK(double pKey) {
         finalCriteria = row -> row.get(pKeyColumnIndex).asDouble() == pKey;
     }
 
