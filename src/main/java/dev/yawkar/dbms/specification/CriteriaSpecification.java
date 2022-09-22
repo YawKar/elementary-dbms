@@ -6,5 +6,5 @@ import dev.yawkar.dbms.db.Table;
 public interface CriteriaSpecification {
 
     boolean examine(Row row);
-    default void setup(Table table) {};
+    default void setup(Table table) {}
 }

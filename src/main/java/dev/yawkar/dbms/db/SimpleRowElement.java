@@ -6,7 +6,7 @@ public class SimpleRowElement implements RowElement {
 
     SimpleRowElement() {}
 
-    SimpleRowElement(String content) {
+    public SimpleRowElement(String content) {
         this.content = content;
     }
 
