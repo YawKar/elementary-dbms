@@ -4,7 +4,9 @@ import dev.yawkar.dbms.DBManager;
 import dev.yawkar.dbms.ElemDBMSManager;
 import dev.yawkar.dbms.db.Column;
 import dev.yawkar.dbms.db.Database;
-import dev.yawkar.dbms.specification.base.ByPK;
+import dev.yawkar.dbms.db.Table;
+import dev.yawkar.dbms.specification.base.EQ;
+import dev.yawkar.dbms.specification.base.update.SET;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,13 +26,13 @@ public class Main {
             for (var row : table.getRows()) {
                 for (int i = 0; i < table.getColumns().size(); ++i) {
                     System.out.printf("%s ", row.get(i).asString());
-                    table.deleteQueriedRows(new ByPK(row.get(pKeyColumn.getIndex()).asString()));
                 }
                 System.out.println();
             }
             System.out.println();
         }
-
+        Table table = database.getTable("courses");
+        table.updateQueriedRows(new EQ("course_id", 1L), new SET("course_title", "Oracle"));
         //manager.dropDatabase("file:sample.elmdb");
     }
 }
