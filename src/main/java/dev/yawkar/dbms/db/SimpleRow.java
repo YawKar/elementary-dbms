@@ -13,6 +13,11 @@ public class SimpleRow implements Row {
     }
 
     @Override
+    public void set(int index, RowElement rowElement) {
+        elements.set(index, rowElement);
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (var element : elements) {
