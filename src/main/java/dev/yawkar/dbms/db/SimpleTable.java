@@ -3,12 +3,14 @@ package dev.yawkar.dbms.db;
 import dev.yawkar.dbms.exception.InvalidNumberOfValuesException;
 import dev.yawkar.dbms.exception.PrimaryKeyConstraintViolationException;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
+import dev.yawkar.dbms.specification.UpdateSpecification;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SimpleTable implements Table {
 
@@ -80,9 +82,9 @@ public class SimpleTable implements Table {
     }
 
     @Override
-    public List<Row> getQueriedRows(CriteriaSpecification criteriaSpecification) {
-        criteriaSpecification.setup(this);
-        return getRows().stream().filter(criteriaSpecification::examine).collect(Collectors.toList());
+    public List<Row> getQueriedRows(CriteriaSpecification criteria) {
+        criteria.setup(this);
+        return getRows().stream().filter(criteria::examine).collect(Collectors.toList());
     }
 
     @Override
@@ -125,11 +127,11 @@ public class SimpleTable implements Table {
     }
 
     @Override
-    public void deleteQueriedRows(CriteriaSpecification criteriaSpecification) {
-        criteriaSpecification.setup(this);
+    public void deleteQueriedRows(CriteriaSpecification criteria) {
+        criteria.setup(this);
         Set<String> pkKeysToDelete = new HashSet<>();
         Column pkColumn = columns.stream().filter(Column::isPk).findAny().get();
-        for (var row : getQueriedRows(criteriaSpecification)) {
+        for (var row : getQueriedRows(criteria)) {
             pkKeysToDelete.add(row.get(pkColumn.getIndex()).asString());
         }
         try {
@@ -174,5 +176,35 @@ public class SimpleTable implements Table {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void updateQueriedRows(CriteriaSpecification criteria, UpdateSpecification update) {
+        update.setup(this);
+        Set<String> allPKeys = new HashSet<>();
+        Column pKeyColumn = columns.stream().filter(Column::isPk).findAny().get();
+        // get all keys in the table
+        getRows().forEach(r -> allPKeys.add(r.get(pKeyColumn.getIndex()).asString()));
+        // get all rows that should be updated
+        var rowsToUpdate = getQueriedRows(criteria);
+        // delete their keys
+        rowsToUpdate.forEach(r -> allPKeys.remove(r.get(pKeyColumn.getIndex()).asString()));
+        // update each row via UpdateSpecification
+        rowsToUpdate.forEach(update::update);
+        // try to add all keys back to the set of all keys
+        rowsToUpdate.forEach(r -> {
+            if (allPKeys.contains(r.get(pKeyColumn.getIndex()).asString())) {
+                throw new PrimaryKeyConstraintViolationException(
+                        "After update there will be more than 1 row with the same PK '%s(%s)' in table '%s'"
+                                .formatted(pKeyColumn.getLabel(), r.get(pKeyColumn.getIndex()).asString(), name));
+            }
+            allPKeys.add(r.get(pKeyColumn.getIndex()).asString());
+        });
+        // delete these rows by criteria
+        deleteQueriedRows(criteria);
+        // add their updated versions back
+        rowsToUpdate.forEach(r -> {
+            insertRow(IntStream.range(0, columns.size()).mapToObj(r::get).map(RowElement::asString).toArray());
+        });
     }
 }

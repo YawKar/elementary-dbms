@@ -5,23 +5,23 @@ import dev.yawkar.dbms.db.Table;
 import dev.yawkar.dbms.exception.NoSuchColumnLabelException;
 import dev.yawkar.dbms.specification.CriteriaSpecification;
 
-public class Equals implements CriteriaSpecification {
+public class EQ implements CriteriaSpecification {
 
     String columnLabel;
     int columnIndex;
     CriteriaSpecification finalCriteria;
 
-    public Equals(String columnLabel, String stringValue) {
+    public EQ(String columnLabel, String stringValue) {
         this.columnLabel = columnLabel;
         finalCriteria = row -> row.get(columnIndex).asString().equals(stringValue);
     }
 
-    public Equals(String columnLabel, Long longValue) {
+    public EQ(String columnLabel, Long longValue) {
         this.columnLabel = columnLabel;
         finalCriteria = row -> row.get(columnIndex).asLong() == longValue;
     }
 
-    public Equals(String columnLabel, Double doubleValue) {
+    public EQ(String columnLabel, Double doubleValue) {
         this.columnLabel = columnLabel;
         finalCriteria = row -> row.get(columnIndex).asDouble() == doubleValue;
     }

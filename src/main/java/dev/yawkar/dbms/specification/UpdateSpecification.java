@@ -3,8 +3,8 @@ package dev.yawkar.dbms.specification;
 import dev.yawkar.dbms.db.Row;
 import dev.yawkar.dbms.db.Table;
 
-public interface CriteriaSpecification {
+public interface UpdateSpecification {
 
-    boolean examine(Row row);
+    void update(Row row);
     default void setup(Table table) {}
 }
