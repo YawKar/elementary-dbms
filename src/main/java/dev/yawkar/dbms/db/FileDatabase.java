@@ -3,11 +3,12 @@ package dev.yawkar.dbms.db;
 import dev.yawkar.dbms.exception.*;
 import dev.yawkar.dbms.specification.TableSpecification;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class FileDatabase implements Database {
@@ -267,7 +268,7 @@ public class FileDatabase implements Database {
     }
 
     @Override
-    public void dropTable(Table tableName) {
+    public void dropTable(Table table) {
         System.out.println("Not implemented yet");
     }
 }
