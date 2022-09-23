@@ -5,13 +5,24 @@ import dev.yawkar.dbms.specification.TableSpecification;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class FileDatabase implements Database {
 
     private final File dbFile;
     private final String uri;
     private final List<Table> tables = new ArrayList<>();
+    private int tableIdCounter = 0;
+
+    private int getFreeTableId() {
+        while (tables.stream().anyMatch(t -> t.getTableId() == tableIdCounter)) {
+            ++tableIdCounter;
+        }
+        return tableIdCounter;
+    }
 
     public FileDatabase(String uri, File dbFile, boolean newDbFile) {
         this.dbFile = dbFile;
@@ -175,8 +186,62 @@ public class FileDatabase implements Database {
 
     @Override
     public Table createTable(TableSpecification tableSpecification) {
-        System.out.println("Not implemented yet");
-        return null;
+        SimpleTable table = new SimpleTable(tableSpecification.getName(), dbFile, getFreeTableId());
+        IntStream.range(0, tableSpecification.getColumns().size())
+                .mapToObj(i -> new SimpleColumn(
+                        tableSpecification.getColumn(i).getLabel(),
+                        i,
+                        tableSpecification.getColumn(i).getType(),
+                        tableSpecification.getColumn(i).isPK()))
+                .forEach(c -> table.columns.add(c));
+        if (tables.stream().anyMatch(t -> t.getName().equals(table.name)))
+            throw new TableWithSuchNameAlreadyExistsException(table.getName());
+        tables.add(table);
+        // now updating the dbFile
+        addTableToDbFile(tableSpecification, table.getTableId());
+        return table;
+    }
+
+    private void addTableToDbFile(TableSpecification table, int tableId) {
+        try {
+            File temporaryDbFile = Files.createFile(Path.of(dbFile.getPath() + ".temp")).toFile();
+            try (var lines = Files.lines(dbFile.toPath());
+                 FileWriter fileWriter = new FileWriter(temporaryDbFile)) {
+                var iterator = lines.iterator();
+                boolean inMetaSection = false;
+                while (iterator.hasNext()) {
+                    String line = iterator.next();
+                    if (line.equals("!endtables")) {
+                        fileWriter.write("%s %d\n".formatted(table.getName(), tableId));
+                        fileWriter.write("%d\n".formatted(table.getColumns().size()));
+                        for (var column : table.getColumns()) {
+                            fileWriter.write("%s %s".formatted(column.getLabel(), column.getType()));
+                            if (column.isPK())
+                                fileWriter.write(" PK");
+                            fileWriter.write('\n');
+                        }
+                    } else if (line.equals("!startmeta")) {
+                        inMetaSection = true;
+                    } else if (line.equals("!endmeta")) {
+                        inMetaSection = false;
+                    }
+                    if (inMetaSection && line.startsWith("tables:")) {
+                        fileWriter.write("tables:%d\n".formatted(tables.size()));
+                    } else {
+                        fileWriter.write(line);
+                        fileWriter.write('\n');
+                    }
+                }
+            }
+            if (!dbFile.delete()) {
+                throw new RuntimeException("Cannot delete old db file '%s'".formatted(dbFile.getName()));
+            }
+            if (!temporaryDbFile.renameTo(dbFile)) {
+                throw new RuntimeException("Cannot rename '%s' to '%s'".formatted(temporaryDbFile.getName(), dbFile.getName()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
