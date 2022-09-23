@@ -8,6 +8,7 @@ import java.util.List;
 public interface Table {
 
     String getName();
+    int getTableId();
     List<Column> getColumns();
     List<Row> getRows();
     List<Row> getQueriedRows(CriteriaSpecification criteria);

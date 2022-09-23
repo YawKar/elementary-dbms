@@ -41,6 +41,11 @@ public class SimpleTable implements Table {
     }
 
     @Override
+    public int getTableId() {
+        return tableId;
+    }
+
+    @Override
     public List<Column> getColumns() {
         return columns;
     }
