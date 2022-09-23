@@ -6,7 +6,6 @@ public class SimpleColumn implements Column {
     int index;
     String type;
     boolean pk;
-    boolean nullable;
 
     SimpleColumn() {}
 
@@ -14,6 +13,11 @@ public class SimpleColumn implements Column {
         this.label = label;
         this.index = index;
         this.type = type;
+    }
+
+    SimpleColumn(String label, int index, String type, boolean pk) {
+        this(label, index, type);
+        this.pk = pk;
     }
 
     @Override
