@@ -5,8 +5,8 @@ import dev.yawkar.dbms.ElemDBMSManager;
 import dev.yawkar.dbms.db.Column;
 import dev.yawkar.dbms.db.Database;
 import dev.yawkar.dbms.db.Table;
-import dev.yawkar.dbms.specification.base.EQ;
-import dev.yawkar.dbms.specification.base.update.SET;
+import dev.yawkar.dbms.specification.criteria.EQ;
+import dev.yawkar.dbms.specification.update.update.SET;
 
 public class Main {
     public static void main(String[] args) {

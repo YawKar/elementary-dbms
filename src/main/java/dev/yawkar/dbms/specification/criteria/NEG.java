@@ -1,4 +1,4 @@
-package dev.yawkar.dbms.specification.base;
+package dev.yawkar.dbms.specification.criteria;
 
 import dev.yawkar.dbms.db.Row;
 import dev.yawkar.dbms.db.Table;

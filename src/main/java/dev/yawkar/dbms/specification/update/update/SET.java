@@ -1,4 +1,4 @@
-package dev.yawkar.dbms.specification.base.update;
+package dev.yawkar.dbms.specification.update.update;
 
 import dev.yawkar.dbms.db.Row;
 import dev.yawkar.dbms.db.SimpleRowElement;
