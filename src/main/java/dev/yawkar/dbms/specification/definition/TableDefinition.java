@@ -10,10 +10,13 @@ import java.util.List;
 public class TableDefinition implements TableSpecification {
 
     private String name;
-    private final List<ColumnSpecification> columns;
+    private final List<ColumnSpecification> columns = new ArrayList<>();
 
-    public TableDefinition() {
-        columns = new ArrayList<>();
+    public TableDefinition() {}
+
+    public TableDefinition(String name, ColumnSpecification ...columns) {
+        this.name = name;
+        this.columns.addAll(List.of(columns));
     }
 
     @Override
