@@ -11,5 +11,4 @@ public interface Database {
     Table getTable(String tableName);
     List<Table> getTables();
     void dropTable(String tableName);
-    void dropTable(Table table);
 }

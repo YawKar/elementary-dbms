@@ -266,9 +266,4 @@ public class FileDatabase implements Database {
                 .orElseThrow(() -> new NoSuchTableNameException(tableName));
         System.out.println("Not implemented yet");
     }
-
-    @Override
-    public void dropTable(Table table) {
-        System.out.println("Not implemented yet");
-    }
 }
