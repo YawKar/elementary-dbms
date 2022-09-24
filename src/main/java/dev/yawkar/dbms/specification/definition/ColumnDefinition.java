@@ -8,6 +8,14 @@ public class ColumnDefinition implements ColumnSpecification {
     private String type;
     private boolean pk;
 
+    public ColumnDefinition() {}
+
+    public ColumnDefinition(String label, String type, boolean pk) {
+        this.label = label;
+        this.type = type;
+        this.pk = pk;
+    }
+
     @Override
     public String getLabel() {
         return label;
