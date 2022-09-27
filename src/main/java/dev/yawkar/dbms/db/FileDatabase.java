@@ -60,32 +60,11 @@ public class FileDatabase implements Database {
         try (FileWriter fileWriter = new FileWriter(dbFile)) {
             fileWriter.write("!startmeta\n");
             fileWriter.write("version:1\n");
-            fileWriter.write("tables:1\n");
+            fileWriter.write("tables:0\n");
             fileWriter.write("!endmeta\n");
             fileWriter.write("!starttables\n");
-            fileWriter.write("students 1\n");
-            fileWriter.write("2\n");
-            fileWriter.write("student_id long PK\n");
-            fileWriter.write("name string\n");
-            fileWriter.write("labs 2\n");
-            fileWriter.write("2\n");
-            fileWriter.write("lab_id long PK\n");
-            fileWriter.write("lab_title string\n");
-            fileWriter.write("courses 3\n");
-            fileWriter.write("3\n");
-            fileWriter.write("course_id long PK\n");
-            fileWriter.write("course_applicants long\n");
-            fileWriter.write("course_title string\n");
             fileWriter.write("!endtables\n");
             fileWriter.write("!startdata\n");
-            fileWriter.write("1 1 yawkar\n");
-            fileWriter.write("1 2 didhat\n");
-            fileWriter.write("1 4 yakiza\n");
-            fileWriter.write("1 3 neon.eagle\n");
-            fileWriter.write("2 1 mathematical_analysis\n");
-            fileWriter.write("2 2 physics\n");
-            fileWriter.write("2 3 programming_in_java\n");
-            fileWriter.write("3 1 89 Software_Engineering\n");
             fileWriter.write("!enddata\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
