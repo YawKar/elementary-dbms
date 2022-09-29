@@ -4,11 +4,9 @@ import dev.yawkar.dbms.exception.*;
 import dev.yawkar.dbms.specification.TableSpecification;
 import dev.yawkar.dbms.specification.criteria.ALL;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -210,5 +208,19 @@ public class FileDatabase implements Database {
         tables.remove(table);
         DBIOUtils.updateMeta("tables", Integer.toString(tables.size()), dbFile);
         DBIOUtils.deleteTableDefinition(tableName, dbFile);
+    }
+
+    @Override
+    public void dump() {
+        try (FileInputStream fin = new FileInputStream(dbFile);
+             FileOutputStream fout = new FileOutputStream(String.format("backup_%s_%s.temp", dbFile.getName(), LocalDateTime.now()))) {
+            int b = fin.read();
+            while (b != - 1) {
+                fout.write(b);
+                b = fin.read();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

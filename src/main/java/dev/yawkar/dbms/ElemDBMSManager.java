@@ -74,4 +74,9 @@ public class ElemDBMSManager implements DBManager {
             throw new UnknownDatabaseTypeUriException(database.getUri());
         }
     }
+
+    @Override
+    public void dumpDatabase(Database database) {
+        database.dump();
+    }
 }

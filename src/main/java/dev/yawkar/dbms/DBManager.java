@@ -8,4 +8,5 @@ public interface DBManager {
     Database createDatabase(String uri);
     void dropDatabase(String uri);
     void dropDatabase(Database database);
+    void dumpDatabase(Database database);
 }

@@ -83,6 +83,8 @@ public class MainTask {
                 writer.printf("%s %s%n", studentFullName, variantFile);
             }
         }
+        // Dump db
+        manager.dumpDatabase(db);
         // Delete the database
         manager.dropDatabase(db);
     }
